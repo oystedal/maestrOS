@@ -8,7 +8,7 @@
 
 void cls(void);
 void putchar(char c);
-void kitoa(char* buf, int base, int d);
+void kitoa(char* out, char base, long d);
 void kprintf(const char* restrict format, ...);
 
 #endif // UTIL_INCLUDE_H
