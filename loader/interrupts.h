@@ -1,3 +1,22 @@
+#ifndef INTERRUPTS_INCLUDE_H
+#define INTERRUPTS_INCLUDE_H
+
+#include "stdint-gcc.h"
+
+void init_idt(void);
+
+#define MAP_INTERRUPT(vector, address) \
+    do { \
+        idt[vector].offset_high = (uint16_t)(((uint32_t)address >> 16) & 0xFFFF); \
+        idt[vector].offset_low = (uint16_t)((uint32_t)address & 0xFFFF); \
+        idt[vector].segment = 0x8; \
+        idt[vector].flags = (1 << 15) | /* segment present */ \
+                                   /* Descriptor Privilege level = 0 */ \
+                       (1 << 11) | /* Descpiptor size = 32 bit */ \
+                       (1 << 10) | /* always 1 */ \
+                       (1 << 9); /* always 1 */ \
+    } while (0);
+
 void interrupt0(void);
 void interrupt1(void);
 void interrupt2(void);
@@ -30,3 +49,5 @@ void interrupt28(void);
 void interrupt29(void);
 void interrupt30(void);
 void interrupt31(void);
+
+#endif /* ifndef INTERRUPTS_INCLUDE_H */
