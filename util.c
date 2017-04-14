@@ -119,6 +119,11 @@ kprintf(const char* restrict format, ...)
                 }
                 continue;
             }
+       case 'c':
+            {
+                char c = (char)va_arg(arg, int);
+                putchar(c);
+            }
         }
     }
 
