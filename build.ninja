@@ -38,9 +38,11 @@ rule copy
 build build/util32.o: cc util.c
 build build/gdt.o: asm loader/gdt.s
 build build/boot.o: asm loader/boot.S
-build build/interrupt.o: asm loader/interrupt.S
+build build/interrupt_entry.o: asm loader/interrupt_entry.S
+build build/interrupts.o: cc loader/interrupts.c
 build build/loader.o: cc loader/loader.c
-build iso/boot/loader: link build/loader.o build/boot.o build/util32.o build/gdt.o build/interrupt.o
+build build/memory.o: cc loader/memory.c
+build iso/boot/loader: link build/loader.o build/boot.o build/util32.o build/gdt.o build/interrupt.o build/memory.o build/interrupts.o
 
 # build build/util.o: cc64 util.c
 # build build/ap.o: asm ap.S

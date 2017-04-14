@@ -97,7 +97,8 @@ kprintf(const char* restrict format, ...)
 
         format++;
         switch (*format) {
-        case 's': {
+        case 's':
+            {
                 char* s = va_arg(arg, char*);
                 while (*s) {
                     putchar(*s);
@@ -120,7 +121,7 @@ kprintf(const char* restrict format, ...)
             }
         }
     }
-    
+
     va_end(arg);
     return;
 }

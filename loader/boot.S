@@ -65,11 +65,11 @@ stack:
     .skip 0x1000
 
 // Directory/table for lower 1GB
-.global pdt0
-pdt0:
+.global page_directory
+page_directory:
     .skip 0x1000
-.global pt0
-pt0:
+.global page_table
+page_table:
     .skip 0x1000
 
 // Directory/table for loader

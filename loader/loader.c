@@ -2,6 +2,7 @@
 #include "multiboot.h"
 #include "../util.h"
 #include "interrupts.h"
+#include "memory.h"
 
 };
 
@@ -37,6 +38,9 @@ void loader_main(uint32_t magic, uint32_t addr)
     }
 
     kprintf("Multiboot magic OK\n");
+
+    early_init_memory();
+    enable_paging();
 
 end:
     kprintf("End of loader_main.\n");
