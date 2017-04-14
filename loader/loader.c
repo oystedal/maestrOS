@@ -69,7 +69,7 @@ parse_multiboot_info(uint32_t addr)
     struct mmap_entry *mmap = (void*)map_region(info->mmap_addr, 0x1000);
     uint32_t mmap_end = (uint32_t)mmap + info->mmap_length;
 
-    for (; (uint32_t)mmap < mmap_end; mmap++) {
+    for (; (uint32_t)mmap < mmap_end; mmap = (struct mmap_entry *)((uint32_t)mmap + mmap->size + sizeof(mmap->size))) {
         kprintf("size = 0x%x, base_addr = 0x%x:%x, length = 0x%x:%x, type = %s\n",
                 mmap->size,
                 mmap->addr_high,
