@@ -76,7 +76,7 @@ parse_multiboot_info(uint32_t addr)
                 mmap->addr_low,
                 mmap->len_high,
                 mmap->len_low,
-                mmap->type == 0x1 ? "available" : "reserved");
+                mmap->type == MULTIBOOT_MEMORY_AVAILABLE ? "available" : "reserved");
     }
 }
 
