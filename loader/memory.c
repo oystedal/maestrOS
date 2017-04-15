@@ -38,7 +38,7 @@ early_init_memory(void)
 
     // ID map first few 4K pages sans 0 page
     // TODO: Find a nice way to limit this
-    for (uint32_t i = 1; i < 100; ++i) {
+    for (uint32_t i = 1; i < 25; ++i) {
         uint32_t addr = i * 0x1000;
         map_table_entry(page_table, addr, addr);
     }
@@ -79,4 +79,83 @@ map_region(uint32_t address, uint32_t limit)
     return (void*)(idx * 0x1000 + offset);
 }
 
+void
+unmap_region(uint32_t address, uint32_t limit)
+{
+    (void)address;
+    (void)limit;
+}
 
+struct mem_region {
+    uint32_t valid;
+    uint32_t base;
+    uint32_t length;
+};
+
+// TODO: Add more invariants to this list
+// Sorted, non-overlapping regions, minimal representation.
+static struct mem_region region[32];
+static uint32_t num_regions = 0;
+
+void
+memory_add_region(uint32_t base, uint32_t length)
+{
+    if ((base & 0xFFF) != 0) {
+        uint32_t diff = ((base + 0x1000) & ~0xFFF) - base;
+        length -= diff;
+        base += diff;
+    }
+
+    // TODO: Remove this dumb protection with something more substantial
+    if (base < 0x20000) {
+        if (length > 0x20000) {
+            const uint32_t diff = 0x20000 - base;
+            base += diff;
+            length -= diff;
+        } else {
+            return;
+        }
+    }
+
+    length &= ~0xFFF;
+    if (length == 0)
+        return;
+
+    kprintf("Added region 0x%x - 0x%x\n", base, base + length);
+
+    region[num_regions].base = base;
+    region[num_regions].length = length;
+    region[num_regions].valid = 1;
+    num_regions++;
+}
+
+void halt(void);
+
+void*
+alloc_page(void)
+{
+    for (uint32_t i = 0; i < 32; ++i) {
+        if (!region[i].valid)
+            continue;
+
+        if (region[i].length == 0)
+            continue;
+
+        uint32_t addr = region[i].base;
+        region[i].base += 0x1000;
+        region[i].length -= 0x1000;
+        return (void*)addr;
+    }
+
+    kprintf("Out of memory\n");
+    halt();
+
+    return (void*)0;
+}
+
+void
+memory_remove_region(uint32_t base, uint32_t length)
+{
+    (void)base;
+    (void)length;
+}
