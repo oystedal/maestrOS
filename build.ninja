@@ -17,7 +17,7 @@ rule asm
   command = $cc32 $cflags -m32 -march=i386 -c $in -o $out
 
 rule link
-  command = $ld32 -Ttext 0x8000 -melf_i386 $in -o $out
+  command = $ld32 -T loader_link.ld -melf_i386 $in -o $out
 
 rule cc64
   command = $cc64 $cflags -m64 -c $in -o $out -ffreestanding
