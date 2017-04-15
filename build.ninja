@@ -29,7 +29,7 @@ rule link64
   command = $cc64 -T kernel_link.ld -o $out $in -ffreestanding -O2 -nostdlib -lgcc -z max-page-size=0x1000
 
 rule grubby
-  command = grub-mkrescue -o $out iso/
+  command = grub-mkrescue -o $out iso/ 2> /dev/null 1> /dev/null
 
 rule copy
   command = cp $in $out
