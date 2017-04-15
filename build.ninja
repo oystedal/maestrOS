@@ -4,9 +4,9 @@ cc64 = x86_64-elf-gcc
 ld64 = x86_64-elf-ld
 
 cflags = -std=gnu99 -Wall -Wextra -Wpedantic
-cflags = $cflags -O3 -I public 
+cflags = $cflags -O3 -I public
 cflags = $cflags -ffreestanding -fno-builtin
-cflags = $cflags -fno-builtin -fno-stack-protector -fno-defer-pop 
+cflags = $cflags -fno-builtin -fno-stack-protector -fno-defer-pop
 cflags = $cflags -z max-page-size=0x1000
 cflags = $cflags -mno-red-zone -mno-mmx -mno-sse -mno-sse2
 
@@ -19,22 +19,22 @@ rule asm
 rule link
   command = $ld32 -Ttext 0x8000 -melf_i386 $in -o $out
 
-# rule cc64
-#   command = $cc $cflags -m64 -c $in -o $out -ffreestanding 
-# 
+rule cc64
+  command = $cc64 $cflags -m64 -c $in -o $out -ffreestanding
+#
 # rule kbuild
 #   command = $cc $cflags -m64 -o $out -ffreestanding -z max-page-size=0x1000 -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -std=gnu99 -Wall -Wextra $in
-# 
-# rule link64
-#   command = $cc -T kernel_link.ld -o $out $in -ffreestanding -O2 -nostdlib -lgcc -z max-page-size=0x1000
+#
+rule link64
+  command = $cc64 -T kernel_link.ld -o $out $in -ffreestanding -O2 -nostdlib -lgcc -z max-page-size=0x1000
 
 rule grubby
   command = grub-mkrescue -o $out iso/
 
 rule copy
   command = cp $in $out
-    
-#build build/elf64.o: cc elf64.c
+
+build build/elf64.o: cc elf64.c
 build build/util32.o: cc util.c
 build build/gdt.o: asm loader/gdt.s
 build build/boot.o: asm loader/boot.S
@@ -42,13 +42,12 @@ build build/interrupt_entry.o: asm loader/interrupt_entry.S
 build build/interrupts.o: cc loader/interrupts.c
 build build/loader.o: cc loader/loader.c
 build build/memory.o: cc loader/memory.c
-build iso/boot/loader: link build/loader.o build/boot.o build/util32.o build/gdt.o build/interrupt.o build/memory.o build/interrupts.o
+build iso/boot/loader: link build/loader.o build/boot.o build/util32.o build/gdt.o build/interrupt.o build/memory.o build/interrupts.o build/elf64.o
 
-# build build/util.o: cc64 util.c
+build build/util.o: cc64 util.c
 # build build/ap.o: asm ap.S
-# build build/kernel.o: cc64 kernel.c
-# build iso/boot/kernel: link64 build/kernel.o build/util.o
+build build/kernel.o: cc64 kernel.c
+build iso/boot/kernel: link64 build/kernel.o build/util.o
 
-#build boot.iso: grubby iso/ iso/boot/kernel iso/boot/loader
-build boot.iso: grubby iso/ iso/boot/loader
+build boot.iso: grubby iso/ iso/boot/kernel iso/boot/loader
 build image: copy boot.iso
