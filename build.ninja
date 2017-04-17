@@ -3,7 +3,7 @@ ld32 = i686-elf-ld
 cc64 = x86_64-elf-gcc
 ld64 = x86_64-elf-ld
 
-cflags = -std=gnu99 -Wall -Wextra -Wpedantic
+cflags = -std=gnu11 -Wall -Wextra -Wpedantic
 cflags = $cflags -O3 -I public
 cflags = $cflags -ffreestanding -fno-builtin
 cflags = $cflags -fno-builtin -fno-stack-protector -fno-defer-pop
