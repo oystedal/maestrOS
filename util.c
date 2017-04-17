@@ -1,13 +1,14 @@
 #include <stdarg.h>
 #include "util.h"
+#include "stdint-gcc.h"
 
 #define COLUMNS                 80
 #define LINES                   24
 #define ATTRIBUTE               7
 
-static unsigned char* const video = (unsigned char*)0xB8000;
-static unsigned int xpos = 0;
-static unsigned int ypos = 0;
+unsigned char* const video = (unsigned char*)0xB8000;
+uint32_t xpos = 0;
+uint32_t ypos = 0;
 
 void
 cls(void)
