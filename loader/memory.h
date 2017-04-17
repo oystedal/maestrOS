@@ -11,4 +11,6 @@ void unmap_region(uint32_t address, uint32_t limit);
 void memory_add_region(uint32_t base, uint32_t length);
 void memory_remove_region(uint32_t base, uint32_t length);
 
+void* alloc_page(void);
+
 #endif /* ifndef MEMORY_H_INCLUDE */

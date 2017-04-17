@@ -94,42 +94,138 @@ struct mem_region {
 
 // TODO: Add more invariants to this list
 // Sorted, non-overlapping regions, minimal representation.
-static struct mem_region region[32];
-static uint32_t num_regions = 0;
+struct mem_region region[32];
+uint32_t num_regions = 0;
+
+static void
+swap_regions(int i, int j)
+{
+    struct mem_region tmp;
+    tmp.length = region[i].length;
+    tmp.base = region[i].base;
+
+    region[i].base = region[j].base;
+    region[i].length = region[j].length;
+
+    region[j].base = tmp.base;
+    region[j].length = tmp.length;
+
+}
+
+static void
+sort_regions(void)
+{
+    for (uint32_t i = 0; i < num_regions; ++i) {
+        for (uint32_t j = i + 1; j < num_regions; j++) {
+            if (region[i].base > region[j].base) {
+                swap_regions(i,j);
+            }
+        }
+    }
+}
+
+static void
+merge_regions(void)
+{
+    for (uint32_t i = 0; i < num_regions - 1; ++i) {
+redo:
+        if (region[i].base + region[i].length >= region[i + 1].base) {
+            region[i].length = region[i + 1].base - region[i].base + region[i + 1].length;
+            swap_regions(i + 1, num_regions - 1);
+            num_regions--;
+            goto redo;
+        }
+    }
+}
+
+static void
+sanitize_regions(void)
+{
+    sort_regions();
+    merge_regions();
+
+    for (uint32_t i = 0; i < num_regions; ++i) {
+        kprintf("Region %d base: 0x%x length 0x%x\n", i, region[i].base, region[i].length);
+    }
+}
 
 void
 memory_add_region(uint32_t base, uint32_t length)
 {
+    kprintf("%s(0x%x, 0x%x)\n", __func__, base, length);
+
     if ((base & 0xFFF) != 0) {
         uint32_t diff = ((base + 0x1000) & ~0xFFF) - base;
         length -= diff;
         base += diff;
     }
 
-    // TODO: Remove this dumb protection with something more substantial
-    if (base < 0x20000) {
-        if (length > 0x20000) {
-            const uint32_t diff = 0x20000 - base;
-            base += diff;
-            length -= diff;
-        } else {
-            return;
-        }
-    }
-
     length &= ~0xFFF;
     if (length == 0)
         return;
-
-    kprintf("Added region 0x%x - 0x%x\n", base, base + length);
 
     region[num_regions].base = base;
     region[num_regions].length = length;
     region[num_regions].valid = 1;
     num_regions++;
+
+    sanitize_regions();
 }
 
-void halt(void);
+void
+memory_remove_region(uint32_t base, uint32_t length)
+{
+    base &= ~0xFFF;
+    if (length & 0xFFF) {
+        length = (length & ~0xFFF) + 0x1000;
+    }
+
+    kprintf("%s(0x%x, 0x%x)\n", __func__, base, length);
+
+restart:
+    for (uint32_t i = 0; i < num_regions; ++i) {
+        const uint32_t end = base + length;
+
+        // Case 1: Simple
+        if (base <= region[i].base && end >= region[i].base + region[i].length) {
+            kprintf("Case 1\n");
+            swap_regions(i, num_regions - 1);
+            num_regions--;
+            goto restart;
+        }
+
+        // Case 2: Removed region extends into the lower part of this region
+        if (base <= region[i].base && end <= region[i].base + region[i].length) {
+            kprintf("Case 2\n");
+            uint32_t new_base = base + length;
+            region[i].length -= new_base - base;
+            region[i].base = new_base;
+            break;
+        }
+
+        // Case 3: Base is above this region
+        if (base > region[i].base + region[i].length)
+            continue;
+
+        // Case 4: Removed region is completely inside this region
+        if (base > region[i].base && end < region[i].base + region[i].length) {
+
+            uint32_t new_region = num_regions++;
+            region[new_region].valid = 1;
+            region[new_region].base = end;
+            region[new_region].length = region[i].base + region[i].length - (end);
+            // region[i].base is unchanged
+            region[i].length = base - region[i].base;
+            break;
+        }
+
+        kprintf("Region %d base: 0x%x length 0x%x\n", i, region[i].base, region[i].length);
+        kprintf("Unhandled case\n");
+        BXBREAK;
+    }
+
+    sanitize_regions();
+}
 
 void*
 alloc_page(void)
@@ -151,11 +247,4 @@ alloc_page(void)
     halt();
 
     return (void*)0;
-}
-
-void
-memory_remove_region(uint32_t base, uint32_t length)
-{
-    (void)base;
-    (void)length;
 }
