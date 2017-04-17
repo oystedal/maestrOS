@@ -5,6 +5,8 @@
 extern uint32_t page_directory[1024];
 extern uint32_t page_table[1024];
 
+void halt(void);
+
 static inline void
 map_directory_entry(uint32_t* table, uint32_t vaddr, uint32_t paddr)
 {
@@ -38,8 +40,8 @@ early_init_memory(void)
 
     // ID map first few 4K pages sans 0 page
     // TODO: Find a nice way to limit this
-    for (uint32_t i = 1; i < 25; ++i) {
-        uint32_t addr = i * 0x1000;
+    for (uint32_t i = 1; i < 300; ++i) {
+        const uint32_t addr = i * 0x1000;
         map_table_entry(page_table, addr, addr);
     }
 
@@ -67,14 +69,16 @@ map_region(uint32_t address, uint32_t limit)
 {
     kprintf("%s(0x%x, 0x%x)\n", __func__, address, limit);
 
-    static uint32_t current_idx = 200;
+    static uint32_t current_idx = 800;
     uint32_t start_address = address & ~0x3FF;
     uint32_t offset = address - (address & ~0x3FF);
 
     const uint32_t idx = current_idx;
     map_table_entry(page_table, idx * 0x1000, start_address);
-    map_table_entry(page_table, (idx + 1) * 0x1000, start_address);
-    current_idx++;
+    map_table_entry(page_table, (idx + 1) * 0x1000, start_address + 0x1000);
+    map_table_entry(page_table, (idx + 2) * 0x1000, start_address + 0x2000);
+    map_table_entry(page_table, (idx + 3) * 0x1000, start_address + 0x3000);
+    current_idx += 4;
 
     return (void*)(idx * 0x1000 + offset);
 }
