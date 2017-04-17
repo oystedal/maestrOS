@@ -31,4 +31,33 @@ gdt:
     .word  0xc092 # flags
     .byte  0x0    # base 31:24
 
+.globl gdtr64
+gdtr64:
+    .word GDT_LIMIT
+    .long gdt64
+
+.globl gdt64
+gdt64:
+    .word 0
+    .word 0
+    .byte 0
+    .byte 0
+    .byte 0
+    .byte 0
+
+    # Code
+    .word 0x0
+    .word 0
+    .byte 0
+    .byte 0x9a
+    .byte 0x20
+    .byte 0x0
+
+    # Data
+    .word 0x0
+    .word 0
+    .byte 0
+    .byte 0x92
+    .byte 0x0
+    .byte 0x0
 
