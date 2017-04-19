@@ -14,7 +14,8 @@ void init_idt(void);
                                    /* Descriptor Privilege level = 0 */ \
                        (1 << 11) | /* Descpiptor size = 32 bit */ \
                        (1 << 10) | /* always 1 */ \
-                       (1 << 9); /* always 1 */ \
+                       (1 << 9)  | /* always 1 */ \
+                       (1 << 8); /* always 1 */ \
     } while (0);
 
 void interrupt0(void);

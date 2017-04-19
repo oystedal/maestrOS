@@ -59,6 +59,13 @@ interrupt\vector:
     jmp interrupt_entry
 .endm
 
+.macro interrupt_wrapper_error_code vector
+.global interrupt\vector
+interrupt\vector:
+    pushl $\vector
+    jmp interrupt_entry_error_code
+.endm
+
 interrupt_wrapper 0
 interrupt_wrapper 1
 interrupt_wrapper 2
@@ -67,16 +74,16 @@ interrupt_wrapper 4
 interrupt_wrapper 5
 interrupt_wrapper 6
 interrupt_wrapper 7
-interrupt_wrapper 8
+interrupt_wrapper_error_code 8
 interrupt_wrapper 9
-interrupt_wrapper 10
-interrupt_wrapper 11
-interrupt_wrapper 12
-interrupt_wrapper 13
-interrupt_wrapper 14
+interrupt_wrapper_error_code 10
+interrupt_wrapper_error_code 11
+interrupt_wrapper_error_code 12
+interrupt_wrapper_error_code 13
+interrupt_wrapper_error_code 14
 interrupt_wrapper 15
 interrupt_wrapper 16
-interrupt_wrapper 17
+interrupt_wrapper_error_code 17
 interrupt_wrapper 18
 interrupt_wrapper 19
 interrupt_wrapper 20

@@ -8,7 +8,7 @@ struct idt_gate {
 };
 
 struct idtr_reg {
-    uint8_t push_it_to_the[sizeof(uintptr_t)-sizeof(uint16_t)];
+    char push_it_to_the[sizeof(uintptr_t)-sizeof(uint16_t)];
     uint16_t limit;
     uint32_t base;
 };
@@ -18,6 +18,9 @@ struct idt_gate idt[32];
 void
 init_idt(void)
 {
+    _Static_assert(sizeof(struct idt_gate) == 8, "IDT gate structure is of incorrect size");
+    // _Static_assert(sizeof(struct idtr_reg) == 8, "IDTR register structure is of incorrect size");
+
     MAP_INTERRUPT(0, interrupt0);
     MAP_INTERRUPT(1, interrupt1);
     MAP_INTERRUPT(2, interrupt2);
@@ -55,6 +58,6 @@ init_idt(void)
     reg.limit = sizeof(struct idt_gate) * 32;
     reg.base = (uint32_t)idt;
 
-    __asm__ volatile ("lidt %0" :: "m"(reg.limit));
+    __asm__ volatile ("lidt (%[idtr])" :: [idtr] "r" (&reg.limit) : "memory");
 }
 
