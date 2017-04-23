@@ -228,9 +228,9 @@ load_kernel(const multiboot_info_t *info)
 
     unsigned char *mod_addr = (unsigned char*)m;
 
-    if (*(mod_addr) != 0x7f &&
-        *(mod_addr+1) != 'E' &&
-        *(mod_addr+2) != 'L' &&
+    if (*(mod_addr)   != 0x7f &&
+        *(mod_addr+1) != 'E'  &&
+        *(mod_addr+2) != 'L'  &&
         *(mod_addr+3) != 'F')
     {
         kprintf("Kernel does not appear to be an ELF binary.\n");

@@ -32,14 +32,15 @@ unsigned char* const video = (unsigned char*)0xB8000;
 uint32_t xpos = 0;
 uint32_t ypos = 0;
 
-
 void
 cls(void)
 {
     int i;
 
-    for (i = 0; i < COLUMNS * LINES * 2; i++)
-        *(video + i) = 0;
+    for (i = 0; i < COLUMNS * LINES * 2; i++) {
+        if (*(video + i) != 0)
+            *(video + i) = 0;
+    }
 
     xpos = 0;
     ypos = 0;
