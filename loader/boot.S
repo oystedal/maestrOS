@@ -64,19 +64,28 @@ up_and_down:
 stack:
     .skip 0x1000
 
-// Directory/table for lower 1GB
+// Page table and directory for loader
 .global page_directory
 page_directory:
     .skip 0x1000
+
 .global page_table
 page_table:
     .skip 0x1000
 
-// Directory/table for loader
-.global pdt1
-pdt1:
+// Paging structures for the kernel
+.global kernel_pml4
+kernel_pml4:
     .skip 0x1000
 
-.global pt1
-pt1:
+.global kernel_pdpt
+kernel_pdpt:
+    .skip 0x1000
+
+.global kernel_pd
+kernel_pd:
+    .skip 0x1000
+
+.global kernel_pt
+kernel_pt:
     .skip 0x1000

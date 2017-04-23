@@ -2,6 +2,28 @@
 #include "util.h"
 #include "stdint-gcc.h"
 
+void
+memcpy(void* dst, void* src, uint32_t size)
+{
+    char* _src = (char*)src;
+    char* _dst = (char*)dst;
+
+    for (uint32_t i = 0; i < size; ++i) {
+        *(_dst + i) = *(_src + i);
+    }
+}
+
+void
+memzero(void* dst, uint32_t count)
+{
+    char* _dst = (char*)dst;
+    kprintf("memzero(0x%x, 0x%x)\n", (uint32_t)_dst, count);
+
+    for (uint32_t i = 0; i < count; ++i) {
+        *(_dst + i) = 0;
+    }
+}
+
 #define COLUMNS                 80
 #define LINES                   24
 #define ATTRIBUTE               7
@@ -9,6 +31,7 @@
 unsigned char* const video = (unsigned char*)0xB8000;
 uint32_t xpos = 0;
 uint32_t ypos = 0;
+
 
 void
 cls(void)
@@ -86,6 +109,12 @@ void kitoa(char* out, char base, long d)
 void
 kprintf(const char* restrict format, ...)
 {
+    if (xpos == 0) {
+        for (uint32_t i = 0; i < 80 * 2; i++) {
+            *(video + (i + ypos * COLUMNS) * 2) = ' ' & 0xFF;
+        }
+    }
+
     char buf[20]; // TODO: Make some reasonable decision on the size
     va_list arg;
     va_start(arg, format);
