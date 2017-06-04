@@ -1,5 +1,6 @@
 #include "util.h"
 #include "stdint.h"
+#include "scheduler.h"
 
 struct mem_region {
     uint32_t valid;
@@ -12,6 +13,11 @@ struct mem_regions {
     struct mem_region regions[1];
 };
 
+uint8_t stack1[1024];
+uint8_t stack2[1024];
+uint8_t stack3[1024];
+uint8_t stack4[1024];
+
 static const char* fact = "Today is tomorrow's yesterday.";
 
 uint32_t
@@ -22,9 +28,14 @@ fib(uint32_t n)
     return n + fib(n-1);
 }
 
+void thread1(void);
+void thread2(void);
+void thread3(void);
+void thread4(void);
+
 void _start(uint32_t meaning_of_life)
 {
-    __asm__ volatile ("andq $0xFFFFFFFFFFFFFFFF, %rsp");
+    __asm__ volatile ("andq $0xFFFFFFFFFFFFFF00, %rsp");
 
     cls();
     kprintf("The kernel has discovered the following facts:\n");
@@ -40,6 +51,13 @@ void _start(uint32_t meaning_of_life)
         struct mem_region *region = &(regions->regions[i]);
         kprintf("Region %d: base: 0x%x length 0x%x\n", i, region->base, region->length);
     }
+
+    scheduler_add((uint64_t)thread1, (uint64_t)(stack1 + 1016));
+    scheduler_add((uint64_t)thread2, (uint64_t)(stack2 + 1016));
+    scheduler_add((uint64_t)thread3, (uint64_t)(stack3 + 1016));
+    scheduler_add((uint64_t)thread4, (uint64_t)(stack4 + 1016));
+
+    scheduler_start();
 
     for (;;) {
         __asm__ volatile ("cli");

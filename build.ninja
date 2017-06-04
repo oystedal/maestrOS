@@ -20,13 +20,17 @@ rule link
   command = $ld32 -T loader_link.ld -melf_i386 $in -o $out
 
 rule cc64
-  command = $cc64 $cflags -m64 -c $in -o $out -ffreestanding
+  command = $cc64 $cflags -m64 -c $in -o $out -mcmodel=small
 #
 # rule kbuild
 #   command = $cc $cflags -m64 -o $out -ffreestanding -z max-page-size=0x1000 -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -std=gnu99 -Wall -Wextra $in
 #
+
+rule asm64
+  command = $cc64 $cflags -m64 -c $in -o $out
+
 rule link64
-  command = $cc64 -T kernel_link.ld -o $out $in -ffreestanding -O2 -nostdlib -lgcc -z max-page-size=0x1000
+  command = $cc64 -O3 -T kernel_link.ld -o $out $in -ffreestanding -mcmodel=small -nostdlib -lgcc -z max-page-size=0x1000
 
 rule grubby
   command = grub-mkrescue -o $out iso/ 2> /dev/null 1> /dev/null
@@ -45,9 +49,12 @@ build build/memory.o: cc loader/memory.c
 build iso/boot/loader: link build/loader.o build/boot.o build/util32.o build/gdt.o build/interrupt.o build/memory.o build/interrupts.o build/elf64.o | loader_link.ld
 
 build build/util.o: cc64 util.c
+build build/scheduler.o: cc64 scheduler.c
+build build/threads.o: cc64 threads.c
+build build/dispatch.o: asm64 dispatch.s
 # build build/ap.o: asm ap.S
 build build/kernel.o: cc64 kernel.c
-build iso/boot/kernel: link64 build/kernel.o build/util.o | kernel_link.ld
+build iso/boot/kernel: link64 build/threads.o build/dispatch.o build/scheduler.o build/kernel.o build/util.o | kernel_link.ld
 
 build boot.iso: grubby iso/ iso/boot/kernel iso/boot/loader | iso/boot/grub/grub.cfg
 build image: copy boot.iso
